@@ -47,16 +47,28 @@ class PlayGround {
 
 class AgentOne {
     _playground: PlayGround;
-    x: number;
-    constructor(gradations: number) {
-        this._playground = new PlayGround(gradations);
-        this.x = Math.random()
+    private _x: number;
+    constructor(playground: PlayGround) {
+        this._playground = playground;
+        const x = Math.random()
+        console.log(x);
+        
+        const sector = this._playground.checkFire(x)
+        if (sector !== -1) {
+            this._x = sector
+        }else{
+            this._x = -1;
+            console.log('Error Agent One');
+        }
     }
     calcFire(): number{
         return 1;
     }
     get playground() {
         return this._playground;
+    }
+    get x (){
+        return this._x
     }
 }
 
@@ -75,9 +87,9 @@ class AgentTwo {
     }
 
     ceckFire(x: number){
-        console.log(x);
-        let res = this._playground.checkFire(x)
-        console.log(res);
+        this._fireStat[x] += 1;
+        console.log(x, this._fireStat);
+
     }
 }
 
@@ -85,9 +97,8 @@ const num = 3 //кількість секцій
 
 
 
-
-const agentOne = new AgentOne(num);
-const playground = agentOne.playground
+const playground = new PlayGround(num)
+const agentOne = new AgentOne(playground);
 const agentTwo = new AgentTwo(playground)
-const x = agentOne.
-// console.log(agentOne.getLowEdge());
+const x = agentOne.x
+agentTwo.ceckFire(x)
