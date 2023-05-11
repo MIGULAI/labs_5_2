@@ -1,12 +1,19 @@
+const fs = require('fs')
+
 class PlayGround {
-    _sections: {a1:number, a2:number}[];
+    _sections: { a1: number, a2: number }[];
     _gradations: number;
+    _iter: number;
+    // _report: {iter: number, fireRig: number; freq: number; n1: number, n2:number, n3:number, points: number}[]
     constructor(gradations: number) {
+        this._iter = 0
         this._sections = [];
         this._gradations = gradations;
-        this.regenerateGradations()
-         console.log(this._sections);
-        
+        let arr = new Array(0.25, 0.75);
+        this.calcSection(arr)
+        //this.regenerateGradations()
+        console.log(this._sections);
+
     }
     get gradations() {
         return this._gradations
@@ -14,18 +21,24 @@ class PlayGround {
     set gradations(x: number) {
         this._gradations = x
     }
-    addSection(obj: {a1:number , a2:number}): void {
+    get iter() {
+        return this._iter
+    }
+    addSection(obj: { a1: number, a2: number }): void {
         this._sections.push(obj)
     }
     regenerateGradations(): void {
-        let min = 0;
-        const max = 1;
         let arr = new Array();
         for (let index = 0; index < this._gradations - 1; index++) {
             const el = Math.random();
             arr.push(el);
         }
         arr = arr.sort((x, y) => x - y)
+        this.calcSection(arr)
+    }
+    private calcSection(arr: number[]) {
+        let min = 0;
+        const max = 1;
         for (let index = 0; index < arr.length; index++) {
             this._sections.push({ a1: min, a2: arr[index] });
             min = arr[index]
@@ -34,14 +47,17 @@ class PlayGround {
             }
         }
     }
-    checkFire(x: number): number{
+    checkFire(x: number): number {
         for (let index = 0; index < this._sections.length; index++) {
-            if(x > this._sections[index].a1 && x < this._sections[index].a2 )
-            {
+            if (x > this._sections[index].a1 && x < this._sections[index].a2) {
                 return index;
             }
         }
         return -1
+    }
+    nextStep(): boolean {
+        this._iter += 1;
+        return true;
     }
 }
 
@@ -52,22 +68,24 @@ class AgentOne {
         this._playground = playground;
         const x = Math.random()
         console.log(x);
-        
+
         const sector = this._playground.checkFire(x)
         if (sector !== -1) {
             this._x = sector
-        }else{
+        } else {
             this._x = -1;
             console.log('Error Agent One');
         }
     }
-    calcFire(): number{
-        return 1;
+    calcFire(): number {
+        const x = Math.random()
+        this._x = this._playground.checkFire(x)
+        return this._x
     }
     get playground() {
         return this._playground;
     }
-    get x (){
+    get x() {
         return this._x
     }
 }
@@ -75,30 +93,98 @@ class AgentOne {
 class AgentTwo {
     _fireStat: number[];
     _playground: PlayGround;
-    constructor(playground: PlayGround){
+    _freq: number[];
+    _point: number;
+    _last: number;
+    _freqPoint: number;
+    constructor(playground: PlayGround) {
+        this._last = -1;
+        this._freqPoint = 0;
         this._playground = playground
         this._fireStat = []
-        let arr = [];
+        this._freq = []
         const gradations = playground.gradations;
         for (let index = 0; index < playground.gradations; index++) {
-            this._fireStat.push(0);  
+            this._fireStat.push(0);
+            this._freq.push(0);
         }
-        console.log(this._fireStat);
+        this._point = Math.max(...this._freq);
     }
 
-    ceckFire(x: number){
-        this._fireStat[x] += 1;
-        console.log(x, this._fireStat);
+    get fireStat() {
+        return this._fireStat
+    }
+    get point() {
+        return this._point
+    }
+    set last(x: number) {
+        this._last = x
+    }
+    checkNextFire(): number {
 
+        let min = 0
+        const max = this._freq.reduce((a, b) => a + b)
+        const x = Math.random() * (max - min)
+        // console.log(x);
+
+        let res = 0;
+        // if(this._last === this._freqPoint){
+        //     return this._last;
+        // }
+        // else{
+        for (let i = 0; i < this._freq.length; i++) {
+            if (x > min && x < this._freq[i] && this._freq[i] !== 0) {
+                res = i
+            }
+            min = this._freq[i]
+        }
+        this._freqPoint = res
+        return res
+        // }
+
+    }
+    ceckFire(x: number) {
+        this.last = x;
+        this._fireStat[x] += 1;
+        this.calcFreq()
+    }
+    calcFreq() {
+        if (this._playground.iter !== 0) {
+            for (let i = 0; i < this._freq.length; i++) {
+                this._freq[i] = Math.round(this._fireStat[i] / (this._playground.iter) * 1000) / 1000;
+            }
+        }
+        this._point = Math.max(...this._freq);
     }
 }
 
-const num = 3 //кількість секцій
-
-
+const num = 3; //кількість секцій
+const steps = 200; // кількість кроків
+let result: { iter: number, x: number, freq: number, fireStat: number[], point: number }[] = []
+const fileName = 'result.csv'
 
 const playground = new PlayGround(num)
 const agentOne = new AgentOne(playground);
 const agentTwo = new AgentTwo(playground)
-const x = agentOne.x
-agentTwo.ceckFire(x)
+
+for (let i = 0; i < steps; i++) {
+    const freq = agentTwo.checkNextFire()
+    const x = agentOne.calcFire()
+    agentTwo.ceckFire(x)
+
+    result.push({ iter: i, x: x, freq: freq, fireStat: agentTwo.fireStat, point: agentTwo.point })
+    console.log(i, x, freq, agentTwo.fireStat, agentTwo.point)
+    playground.nextStep()
+}
+
+let csv: string = ''
+
+for(let i = 0; i < result.length; i++){
+    csv += `${result[i].iter},${result[i].x},${result[i].point}\n`;
+}
+
+try {
+    fs.writeFileSync(fileName, csv);
+  } catch (err) {
+    console.error(err);
+  }
