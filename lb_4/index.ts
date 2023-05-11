@@ -1,53 +1,93 @@
 class PlayGround {
-    _lowEdge: number;
-    _hightEdge: number;
-
-    constructor(){
-        this._hightEdge = 1;
-        this._lowEdge = 0;
+    _sections: {a1:number, a2:number}[];
+    _gradations: number;
+    constructor(gradations: number) {
+        this._sections = [];
+        this._gradations = gradations;
+        this.regenerateGradations()
+         console.log(this._sections);
+        
     }
-    get lowEdge(){
-        return this._lowEdge;
+    get gradations() {
+        return this._gradations
     }
-    get hightEdge(){
-        return this._hightEdge
+    set gradations(x: number) {
+        this._gradations = x
     }
-    set lowEdge(x: number){
-        this._lowEdge = x
+    addSection(obj: {a1:number , a2:number}): void {
+        this._sections.push(obj)
     }
-    set hightEdge(x: number){
-        this._hightEdge = x
+    regenerateGradations(): void {
+        let min = 0;
+        const max = 1;
+        let arr = new Array();
+        for (let index = 0; index < this._gradations - 1; index++) {
+            const el = Math.random();
+            arr.push(el);
+        }
+        arr = arr.sort((x, y) => x - y)
+        for (let index = 0; index < arr.length; index++) {
+            this._sections.push({ a1: min, a2: arr[index] });
+            min = arr[index]
+            if (index === arr.length - 1) {
+                this._sections.push({ a1: min, a2: max });
+            }
+        }
+    }
+    checkFire(x: number): number{
+        for (let index = 0; index < this._sections.length; index++) {
+            if(x > this._sections[index].a1 && x < this._sections[index].a2 )
+            {
+                return index;
+            }
+        }
+        return -1
     }
 }
 
-
 class AgentOne {
-    _playground;
-    constructor(){
-        this._playground = new PlayGround();
-        const a1 = Math.random();
-        const a2 = Math.random() * (1 -a1 ) + a1;
-        this.generateValues(a1, a2);
+    _playground: PlayGround;
+    x: number;
+    constructor(gradations: number) {
+        this._playground = new PlayGround(gradations);
+        this.x = Math.random()
     }
-
-    generateValues(a1: number, a2: number){
-       // console.log(a1, a2);
-        this._playground.lowEdge = a1;
-        this._playground.hightEdge = a2;
-
+    calcFire(): number{
+        return 1;
     }
-
-    playground() {
+    get playground() {
         return this._playground;
-    }
-    getLowEdge(){
-        return this._playground.lowEdge
     }
 }
 
 class AgentTwo {
-    
+    _fireStat: number[];
+    _playground: PlayGround;
+    constructor(playground: PlayGround){
+        this._playground = playground
+        this._fireStat = []
+        let arr = [];
+        const gradations = playground.gradations;
+        for (let index = 0; index < playground.gradations; index++) {
+            this._fireStat.push(0);  
+        }
+        console.log(this._fireStat);
+    }
+
+    ceckFire(x: number){
+        console.log(x);
+        let res = this._playground.checkFire(x)
+        console.log(res);
+    }
 }
 
-const agentOne = new AgentOne();
-console.log(agentOne.getLowEdge());
+const num = 3 //кількість секцій
+
+
+
+
+const agentOne = new AgentOne(num);
+const playground = agentOne.playground
+const agentTwo = new AgentTwo(playground)
+const x = agentOne.
+// console.log(agentOne.getLowEdge());
