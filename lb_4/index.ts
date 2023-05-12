@@ -97,12 +97,16 @@ class AgentTwo {
     _point: number;
     _last: number;
     _freqPoint: number;
+    _freqed: number;
+    _freqNum: number;
     constructor(playground: PlayGround) {
         this._last = -1;
         this._freqPoint = 0;
         this._playground = playground
         this._fireStat = []
         this._freq = []
+        this._freqNum = 0;
+        this._freqed = 1
         const gradations = playground.gradations;
         for (let index = 0; index < playground.gradations; index++) {
             this._fireStat.push(0);
@@ -121,40 +125,24 @@ class AgentTwo {
         this._last = x
     }
     checkNextFire(): number {
-
-        let min = 0
-        const max = this._freq.reduce((a, b) => a + b)
-        const x = Math.random() * (max - min)
-        // console.log(x);
-
-        let res = 0;
-        // if(this._last === this._freqPoint){
-        //     return this._last;
-        // }
-        // else{
-        for (let i = 0; i < this._freq.length; i++) {
-            if (x > min && x < this._freq[i] && this._freq[i] !== 0) {
-                res = i
-            }
-            min = this._freq[i]
+        if(this._fireStat.reduce((a,b) => a+b) < 20){
+            const fire = Math.random()
+            this._freqed = this._playground.checkFire(fire)
+        }else{
+            this._freqed =this._fireStat.indexOf( Math.max(...this._fireStat));
         }
-        this._freqPoint = res
-        return res
-        // }
-
+        return this._freqed;
     }
     ceckFire(x: number) {
         this.last = x;
-        this._fireStat[x] += 1;
-        this.calcFreq()
-    }
-    calcFreq() {
-        if (this._playground.iter !== 0) {
-            for (let i = 0; i < this._freq.length; i++) {
-                this._freq[i] = Math.round(this._fireStat[i] / (this._playground.iter) * 1000) / 1000;
-            }
+        if(this._freqed === x){
+            this._freqNum += 1
         }
-        this._point = Math.max(...this._freq);
+        this._fireStat[x] += 1;
+    }
+    calcFreq(i: number): number {
+        this._point = this._freqNum / i;
+        return this._point;
     }
 }
 
@@ -171,7 +159,7 @@ for (let i = 0; i < steps; i++) {
     const freq = agentTwo.checkNextFire()
     const x = agentOne.calcFire()
     agentTwo.ceckFire(x)
-
+    agentTwo.calcFreq(i)
     result.push({ iter: i, x: x, freq: freq, fireStat: agentTwo.fireStat, point: agentTwo.point })
     console.log(i, x, freq, agentTwo.fireStat, agentTwo.point)
     playground.nextStep()
