@@ -12,7 +12,7 @@ class PlayGround {
         let arr = new Array(0.25, 0.75);
         this.calcSection(arr)
         //this.regenerateGradations()
-        console.log(this._sections);
+        //console.log(this._sections);
 
     }
     get gradations() {
@@ -67,14 +67,14 @@ class AgentOne {
     constructor(playground: PlayGround) {
         this._playground = playground;
         const x = Math.random()
-        console.log(x);
+       // console.log(x);
 
         const sector = this._playground.checkFire(x)
         if (sector !== -1) {
             this._x = sector
         } else {
             this._x = -1;
-            console.log('Error Agent One');
+           //console.log('Error Agent One');
         }
     }
     calcFire(): number {
@@ -125,23 +125,27 @@ class AgentTwo {
         this._last = x
     }
     checkNextFire(): number {
-        if(this._fireStat.reduce((a,b) => a+b) < 20){
+        if (this._fireStat.reduce((a, b) => a + b) < 20) {
             const fire = Math.random()
             this._freqed = this._playground.checkFire(fire)
-        }else{
-            this._freqed =this._fireStat.indexOf( Math.max(...this._fireStat));
+        } else {
+            this._freqed = this._fireStat.indexOf(Math.max(...this._fireStat));
         }
         return this._freqed;
     }
     ceckFire(x: number) {
         this.last = x;
-        if(this._freqed === x){
+        if (this._freqed === x) {
             this._freqNum += 1
         }
         this._fireStat[x] += 1;
     }
     calcFreq(i: number): number {
         this._point = this._freqNum / i;
+        // if (this._point >= max && i >= 20) {
+        //     this._playground.regenerateGradations()
+        //     triger = true
+        // }
         return this._point;
     }
 }
@@ -150,29 +154,47 @@ const num = 3; //кількість секцій
 const steps = 200; // кількість кроків
 let result: { iter: number, x: number, freq: number, fireStat: number[], point: number }[] = []
 const fileName = 'result.csv'
+const max = 0.6;
+let triger = false;
 
-const playground = new PlayGround(num)
-const agentOne = new AgentOne(playground);
-const agentTwo = new AgentTwo(playground)
+let playground = new PlayGround(num)
+let agentOne = new AgentOne(playground);
+let agentTwo = new AgentTwo(playground)
+let counter = 0;
+do {
+    let maximum = 0;
+    for (let i = 0; i < steps; i++) {
+        const freq = agentTwo.checkNextFire()
+        const x = agentOne.calcFire()
+        agentTwo.ceckFire(x);
+        const point =  agentTwo.calcFreq(i);
+        result.push({ iter: i, x: x, freq: freq, fireStat: agentTwo.fireStat, point: agentTwo.point })
+        if(point >= max && i > 50){
+            maximum = point
+            playground.regenerateGradations()
+            triger = true
+        }
+        playground.nextStep()
+    }
+    console.log(triger ? 'Done!!' : `Iteretion false  ${counter}, max point is ${maximum}`);
+    if (!triger) {
+        playground = new PlayGround(num);
+        agentOne = new AgentOne(playground);
+        agentTwo = new AgentTwo(playground);
+        result = [];
+    }
+    counter++;
+} while (!triger)
 
-for (let i = 0; i < steps; i++) {
-    const freq = agentTwo.checkNextFire()
-    const x = agentOne.calcFire()
-    agentTwo.ceckFire(x)
-    agentTwo.calcFreq(i)
-    result.push({ iter: i, x: x, freq: freq, fireStat: agentTwo.fireStat, point: agentTwo.point })
-    console.log(i, x, freq, agentTwo.fireStat, agentTwo.point)
-    playground.nextStep()
-}
 
 let csv: string = ''
 
-for(let i = 0; i < result.length; i++){
+for (let i = 0; i < result.length; i++) {
     csv += `${result[i].iter},${result[i].x},${result[i].point}\n`;
 }
 
 try {
     fs.writeFileSync(fileName, csv);
-  } catch (err) {
+} catch (err) {
     console.error(err);
-  }
+}
