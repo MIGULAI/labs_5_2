@@ -12,14 +12,39 @@ const numCells = Math.floor(width / cellSize);
 const cells = new Array(numCells).fill(0);
 cells[Math.floor(numCells / 2)] = 1;
 
-function getNewCellValue(cells, i) {
+function transition(cells, i) {
     const left = cells[i - 1] || 0;
     const right = cells[i + 1] || 0;
-    return (left ^ cells[i] ^ right) === 1 ? 1 : 0;
+    const current = cells[i]
+    if (left === 1 && current === 1 && right === 1) {
+        return 0;
+    }
+    if (left === 1 && current === 1 && right === 0) {
+        return 0;
+    }
+    if (left === 1 && current === 0 && right === 1) {
+        return 0;
+    }
+    if (left === 1 && current === 0 && right === 0) {
+        return 1;
+    }
+    if (left === 0 && current === 1 && right === 1) {
+        return 1;
+    }
+    if (left === 0 && current === 1 && right === 0) {
+        return 1;
+    }
+    if (left === 0 && current === 0 && right === 1) {
+        return 1;
+    }
+    if (left === 0 && current === 0 && right === 0) {
+        return 0;
+    }
+    return 0;
 }
 
 function update() {
-    const newCells = cells.map((_, i) => getNewCellValue(cells, i));
+    const newCells = cells.map((_, i) => transition(cells, i));
     cells.splice(0, cells.length, ...newCells);
 }
 
