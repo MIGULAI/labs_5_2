@@ -48,8 +48,6 @@ function compare(a, b) {
     return 0;
 }
 
-
-
 const changeValues = () => {
     let smthMinA = dom.x - A * (maxA - minA) / 2
     let smthMaxA = dom.x - A * (maxA - minA) / 2
@@ -103,7 +101,6 @@ const migrate = (groups) => {
         }
         migrationArray.splice(index, 1)
     }
-    //return groups
 }
 
 let liders = [] // лідери
@@ -112,12 +109,9 @@ for (let iteration = 0; iteration < 10; iteration++) {
 
 
     for (let i = 0; i < groupsNumb; i++) {
-        //groups
-
         let iters = 5
         const bits = 8  // бітність хромосоми
         const numberChroms = 10 // кількість хромосом
-        // хромосоми
         let t = 0 // ітерація
         let pSum = 0
         let n = Math.ceil(numberChroms / 10)
@@ -129,28 +123,13 @@ for (let iteration = 0; iteration < 10; iteration++) {
                 P.push(chrom)
                 pSum += chrom.fitness
             }
-            // dom = arr[0]
             groups[i] = P
-
-            //console.log(index);
-            //let best = arr.splice(0, n)
-            // liderBoard.push({ ...dom, iter: index })
-            // changeValues()
         }
-
-
-        // liders.push(liderBoard[0]);
-
-
-
     }
     migrate(groups)
     for (let i = 0; i < groups.length; i++) {
         let arr = groups[i].sort(compare)
         let smallDom = arr[0]
-        //dom = arr[0]
-       // let best = arr.splice(0, 1)
-        //liderBoard.sort(compare)
         liderBoard.push({
             ...smallDom
         })
@@ -163,8 +142,3 @@ for (let iteration = 0; iteration < 10; iteration++) {
 }
 liders.sort(compare)
 console.log(liders[0]);
-
-//let sortedLiders = liders.sort(compare)
-
-//console.log("Максимальний лідер :  " + "\nx:\t" + sortedLiders[0].x + '\ny:\t' + sortedLiders[0].y.toString() + "\nfitness:\t" + sortedLiders[0].fitness);
-//console.log("Мінімальний лідер : " + "\nx:\t" + sortedLiders[sortedLiders.length - 1].x + '\ny:\t' + sortedLiders[sortedLiders.length - 1].y + "\nfitness:\t" + sortedLiders[sortedLiders.length - 1].fitness);

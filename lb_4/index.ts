@@ -4,16 +4,12 @@ class PlayGround {
     _sections: { a1: number, a2: number }[];
     _gradations: number;
     _iter: number;
-    // _report: {iter: number, fireRig: number; freq: number; n1: number, n2:number, n3:number, points: number}[]
     constructor(gradations: number) {
         this._iter = 0
         this._sections = [];
         this._gradations = gradations;
         let arr = new Array(0.25, 0.75);
         this.calcSection(arr)
-        //this.regenerateGradations()
-        //console.log(this._sections);
-
     }
     get gradations() {
         return this._gradations
@@ -67,14 +63,11 @@ class AgentOne {
     constructor(playground: PlayGround) {
         this._playground = playground;
         const x = Math.random()
-       // console.log(x);
-
         const sector = this._playground.checkFire(x)
         if (sector !== -1) {
             this._x = sector
         } else {
             this._x = -1;
-           //console.log('Error Agent One');
         }
     }
     calcFire(): number {
@@ -142,10 +135,6 @@ class AgentTwo {
     }
     calcFreq(i: number): number {
         this._point = this._freqNum / i;
-        // if (this._point >= max && i >= 20) {
-        //     this._playground.regenerateGradations()
-        //     triger = true
-        // }
         return this._point;
     }
 }
